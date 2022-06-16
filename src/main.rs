@@ -1,6 +1,7 @@
 use cli_2048::{Grid, Direction};
-use crossterm::{Result, event::{read,Event}};
+use crossterm::{execute, Result, event::{read,Event}, terminal};
 use std::env;
+use std::io::{stdout};
 
 fn main() -> Result<()>{
     let args: Vec<String> = env::args().collect();
@@ -26,11 +27,13 @@ fn main() -> Result<()>{
             std::process::exit(1);
         }
     }
+    execute!(
+        stdout(),
+        terminal::SetTitle("2048"),
+    ).unwrap();
     
     println!("{grid}");
-
     loop {
-        // `read()` blocks until an `Event` is available
         match read()? {
             Event::Key(event) => {
                 let input = format!("{:?}", event.code);
@@ -66,6 +69,7 @@ fn main() -> Result<()>{
                     }
                 };
                 println!("{grid}");
+                
             },
             _ => {},
         }

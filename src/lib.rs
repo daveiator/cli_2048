@@ -18,6 +18,10 @@ impl Grid {
         //add two starting numbers
         grid.add_random_number().unwrap().add_random_number().unwrap()
     }
+
+    pub fn get_size(&self) -> (usize, usize) {
+        (( self.formatted_numbers()[0].len() + 1 ) * self.rows[0].len() + 1, self.rows.len() * 2 +1)
+    }
     
     pub fn slide(&self, dir: Direction) -> Result<Grid, &'static str> {
         let mut rows: Vec<Vec<u8>> = self.rows.clone();
