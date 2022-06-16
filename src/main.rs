@@ -7,8 +7,10 @@ fn main() {
 
     loop {
         println!("Enter your move:");
+
         let mut input = String::new();
         io::stdin().read_line(&mut input).unwrap();
+
         let input = input.trim();
         if input == "q" {
             break;

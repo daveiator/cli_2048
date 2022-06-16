@@ -1,4 +1,5 @@
 use rand::Rng;
+use phf::phf_map;
 use std::fmt;
 
 pub struct Grid {
@@ -174,60 +175,111 @@ impl fmt::Debug for Grid {
 
 impl fmt::Display for Grid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+
+        let pipes = PIPES.get("Thick").unwrap();
+
         let grid_str = self.formatted_numbers();
         //draw top border
-        write!(f, "╔")?;
+        write!(f, "{}", pipes.get("top_left").unwrap())?;
         for i in 0..grid_str[0].len() {
             for _ in 0..grid_str[0][0].len() {
-                write!(f, "═")?;
+                write!(f, "{}", pipes.get("horizontal").unwrap())?;
             }
             if i != grid_str[0].len() - 1 {
-                write!(f, "╦")?;
+                write!(f, "{}", pipes.get("top_horizontal").unwrap())?;
             }
         }
-        write!(f, "╗\n")?;
+        write!(f, "{}\n", pipes.get("top_right").unwrap())?;
 
         for row in &grid_str {
             for val in row {
-                write!(f, "║{}", val)?;
+                write!(f, "{}{}", pipes.get("vertical").unwrap(), val)?;
             }
-            write!(f, "║\n")?;
+            write!(f, "{}\n", pipes.get("vertical").unwrap())?;
 
             if row != &grid_str[grid_str.len() - 1] {
-                write!(f, "╠")?;
+                write!(f, "{}", pipes.get("left_vertical").unwrap())?;
                 for i in 0..grid_str[0].len() {
                     for _ in 0..grid_str[0][0].len() {
-                        write!(f, "═")?;
+                        write!(f, "{}", pipes.get("horizontal").unwrap())?;
                     }
                     if i != grid_str[0].len() - 1 {
-                        write!(f, "╬")?;
+                        write!(f, "{}", pipes.get("cross").unwrap())?;
                     }
                 }
-                write!(f, "╣\n")?;
+                write!(f, "{}\n", pipes.get("right_vertical").unwrap())?;
             }
         }
-        write!(f, "╚")?;
+        write!(f, "{}", pipes.get("bottom_left").unwrap())?;
             for i in 0..grid_str[0].len() {
                 for _ in 0..grid_str[0][0].len() {
-                    write!(f, "═")?;
+                    write!(f, "{}", pipes.get("horizontal").unwrap())?;
                 }
                 if i != grid_str[0].len() - 1 {
-                    write!(f, "╩")?;
+                    write!(f, "{}", pipes.get("bottom_horizontal").unwrap())?;
                 }
             }
-            write!(f, "╝\n")?;
+            write!(f, "{}\n", pipes.get("bottom_right").unwrap())?;
         Ok(())
-        // Border:
-        // ╔═╗╦╠║╣╚╩╝╬
     }
 }
 
+//Direction
 pub enum Direction {
     LEFT,
     RIGHT,
     UP,
     DOWN,
 }
+
+type PipeMap = phf::Map<&'static str, &'static str>;
+
+static PIPES: phf::Map<&'static str, &'static PipeMap> = phf_map! {
+    "Thin" => &PIPEMAP_THIN,
+    "Medium" => &PIPEMAP_MEDIUM,
+    "Thick" => &PIPEMAP_THICK,
+};
+
+static PIPEMAP_THIN: PipeMap = phf_map! {
+    "horizontal" => "─",
+    "vertical" => "│",
+    "top_left" => "┌",
+    "top_right" => "┐",
+    "bottom_left" => "└",
+    "bottom_right" => "┘",
+    "top_horizontal" => "┬",
+    "bottom_horizontal" => "┴",
+    "left_vertical" => "├",
+    "right_vertical" => "┤",
+    "cross" => "┼",
+};
+static PIPEMAP_MEDIUM: PipeMap = phf_map! {
+    "horizontal" => "━",
+    "vertical" => "┃",
+    "top_left" => "┏",
+    "top_right" => "┓",
+    "bottom_left" => "┗",
+    "bottom_right" => "┛",
+    "top_horizontal" => "┳",
+    "bottom_horizontal" => "┻",
+    "left_vertical" => "┣",
+    "right_vertical" => "┫",
+    "cross" => "╋",
+};
+static PIPEMAP_THICK: PipeMap = phf_map! {
+    "horizontal" => "═",
+    "vertical" => "║",
+    "top_left" => "╔",
+    "top_right" => "╗",
+    "bottom_left" => "╚",
+    "bottom_right" => "╝",
+    "top_horizontal" => "╦",
+    "bottom_horizontal" => "╩",
+    "left_vertical" => "╠",
+    "right_vertical" => "╣",
+    "cross" => "╬",
+};
+
 
 //tests
 #[cfg(test)]
