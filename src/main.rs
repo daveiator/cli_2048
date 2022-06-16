@@ -1,31 +1,62 @@
 use cli_2048::{Grid, Direction};
-use std::io;
+use crossterm::{Result, event::{read,Event}};
+use std::env;
 
-fn main() {
+fn main() -> Result<()>{
+    let args: Vec<String> = env::args().collect();
     let mut grid = Grid::new(4, 4);
+    if args.len() > 2 {
+        grid = Grid::new(
+            args[1].parse::<usize>().unwrap_or_else(|_| {
+                println!("Invalid arguments!");
+                std::process::exit(1);
+            }), args[2].parse::<usize>().unwrap_or_else(|_| {
+                println!("Invalid arguments!");
+                std::process::exit(1);
+            }));
+    }
+    
     println!("{grid}");
 
     loop {
-        println!("Enter your move:");
-
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).unwrap();
-
-        let input = input.trim();
-        if input == "q" {
-            break;
+        // `read()` blocks until an `Event` is available
+        match read()? {
+            Event::Key(event) => {
+                let input = format!("{:?}", event.code);
+                let input = input.to_string();
+                let input = input.split("'").collect::<Vec<&str>>()[1];
+                if input == "q" {
+                    println!("Quitting...");
+                    std::process::exit(0);
+                }
+                let direction = match input {
+                    "a" => Direction::LEFT,
+                    "d" => Direction::RIGHT,
+                    "w" => Direction::UP,
+                    "s" => Direction::DOWN,
+                    _ => {
+                        println!("Invalid input: {}", input);
+                        println!("{grid}");
+                        continue;
+                    }
+                };
+                grid = match grid.slide(direction) {
+                    Ok(grid) => grid,
+                    Err(e) => {
+                        match e {
+                            "no more options"=> {
+                                println!("Game over! No more options!");
+                                std::process::exit(0);
+                            }
+                            _ => {
+                                panic!("{}", e);
+                            }
+                        }
+                    }
+                };
+                println!("{grid}");
+            },
+            _ => {},
         }
-        let direction = match input {
-            "a" => Direction::LEFT,
-            "d" => Direction::RIGHT,
-            "w" => Direction::UP,
-            "s" => Direction::DOWN,
-            _ => {
-                println!("Invalid input");
-                continue;
-            }
-        };
-        grid = grid.slide(direction).unwrap();
-        println!("{grid}");
     }
 }

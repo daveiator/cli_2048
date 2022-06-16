@@ -11,3 +11,4 @@ path = "src/main.rs"
 [dependencies]
 rand = "0.8.4"
 phf = { version = "0.10", features = ["macros"] }
+crossterm = "0.23.2"
