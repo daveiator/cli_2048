@@ -176,9 +176,11 @@ impl fmt::Debug for Grid {
 impl fmt::Display for Grid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 
+        //set pipes
         let pipes = PIPES.get("Thick").unwrap();
 
         let grid_str = self.formatted_numbers();
+
         //draw top border
         write!(f, "{}", pipes.get("top_left").unwrap())?;
         for i in 0..grid_str[0].len() {
@@ -191,13 +193,28 @@ impl fmt::Display for Grid {
         }
         write!(f, "{}\n", pipes.get("top_right").unwrap())?;
 
-        for row in &grid_str {
-            for val in row {
-                write!(f, "{}{}", pipes.get("vertical").unwrap(), val)?;
+        //draw row
+        for i in 0..grid_str.len() {
+            for col in &grid_str[i] {
+                write!(f, "{}{}", pipes.get("vertical").unwrap(), col)?;
             }
             write!(f, "{}\n", pipes.get("vertical").unwrap())?;
 
-            if row != &grid_str[grid_str.len() - 1] {
+            //Draw bottom border or cross-line
+            if i == grid_str.len() - 1 {
+                //bottom border
+                write!(f, "{}", pipes.get("bottom_left").unwrap())?;
+                for i in 0..grid_str[0].len() {
+                    for _ in 0..grid_str[0][0].len() {
+                        write!(f, "{}", pipes.get("horizontal").unwrap())?;
+                    }
+                    if i != grid_str[0].len() - 1 {
+                        write!(f, "{}", pipes.get("bottom_horizontal").unwrap())?;
+                    }
+                }
+                write!(f, "{}\n", pipes.get("bottom_right").unwrap())?;
+            } else {
+                //cross-line
                 write!(f, "{}", pipes.get("left_vertical").unwrap())?;
                 for i in 0..grid_str[0].len() {
                     for _ in 0..grid_str[0][0].len() {
@@ -210,16 +227,7 @@ impl fmt::Display for Grid {
                 write!(f, "{}\n", pipes.get("right_vertical").unwrap())?;
             }
         }
-        write!(f, "{}", pipes.get("bottom_left").unwrap())?;
-            for i in 0..grid_str[0].len() {
-                for _ in 0..grid_str[0][0].len() {
-                    write!(f, "{}", pipes.get("horizontal").unwrap())?;
-                }
-                if i != grid_str[0].len() - 1 {
-                    write!(f, "{}", pipes.get("bottom_horizontal").unwrap())?;
-                }
-            }
-            write!(f, "{}\n", pipes.get("bottom_right").unwrap())?;
+
         Ok(())
     }
 }
