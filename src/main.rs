@@ -4,16 +4,27 @@ use std::env;
 
 fn main() -> Result<()>{
     let args: Vec<String> = env::args().collect();
+
     let mut grid = Grid::new(4, 4);
-    if args.len() > 2 {
-        grid = Grid::new(
-            args[1].parse::<usize>().unwrap_or_else(|_| {
-                println!("Invalid arguments!");
-                std::process::exit(1);
-            }), args[2].parse::<usize>().unwrap_or_else(|_| {
-                println!("Invalid arguments!");
-                std::process::exit(1);
-            }));
+
+    match args.len() {
+        1 => {}
+        3 => {
+            //grid size
+            grid = Grid::new(
+                args[1].parse::<usize>().unwrap_or_else(|_| {
+                    println!("Invalid arguments!");
+                    std::process::exit(1);
+                }), args[2].parse::<usize>().unwrap_or_else(|_| {
+                    println!("Invalid arguments!");
+                    std::process::exit(1);
+                })
+            );
+        }
+        _ => {
+            println!("Invalid arguments!");
+            std::process::exit(1);
+        }
     }
     
     println!("{grid}");
