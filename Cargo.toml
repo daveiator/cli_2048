@@ -17,7 +17,7 @@ name = "2048"
 path = "src/main.rs"
 
 [lib]
-name = "lib"
+name = "cli_2048"
 path = "src/lib.rs"
 
 [dependencies]
