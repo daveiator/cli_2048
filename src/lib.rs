@@ -19,6 +19,12 @@ impl Grid {
         grid.add_random_number().unwrap().add_random_number().unwrap()
     }
 
+    pub fn from_rows(rows: Vec<Vec<u8>>) -> Grid {
+        Grid {
+            rows,
+        }
+    }
+
     pub fn get_size(&self) -> (usize, usize) {
         (( self.formatted_numbers()[0].len() + 1 ) * self.rows[0].len() + 1, self.rows.len() * 2 +1)
     }
@@ -326,5 +332,14 @@ mod tests {
         assert_eq!(row, vec![2, 0, 0, 0]);
         let row = grid.combine_row(&vec![2, 2, 3, 4, 6, 6, 5, 0, 6]);
         assert_eq!(row, vec![3, 3, 4, 7, 5, 6, 0, 0, 0]);
+    }
+
+    #[test]
+    fn overwrite_rows() {
+        let grid = Grid::new(2, 2);
+        assert_eq!(grid.rows.len(), 2);
+        let new_rows = vec![vec![1; 4]; 4];
+        let grid = Grid::from_rows(new_rows.clone());
+        assert_eq!(grid.rows, new_rows);
     }
 }
