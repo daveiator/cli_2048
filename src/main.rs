@@ -1,5 +1,5 @@
 use cli_2048::{Grid, Direction};
-use crossterm::{execute, Result, event::{read,Event}, terminal};
+use crossterm::{execute, Result, event::{read,Event,KeyCode}, terminal};
 use std::env;
 use std::io::{stdout};
 
@@ -36,20 +36,21 @@ fn main() -> Result<()>{
     loop {
         match read()? {
             Event::Key(event) => {
-                let input = format!("{:?}", event.code);
-                let input = input.to_string();
-                let input = input.split("'").collect::<Vec<&str>>()[1];
-                if input == "q" {
+                let input = event.code;
+                // let input = input.to_string();
+                //println!("{}", input);
+
+                if input == KeyCode::Char('q') {
                     println!("Quitting...");
                     std::process::exit(0);
                 }
                 let direction = match input {
-                    "a" => Direction::LEFT,
-                    "d" => Direction::RIGHT,
-                    "w" => Direction::UP,
-                    "s" => Direction::DOWN,
+                    KeyCode::Char('a') | KeyCode::Left => Direction::LEFT,
+                    KeyCode::Char('d') | KeyCode::Right => Direction::RIGHT,
+                    KeyCode::Char('w') | KeyCode::Up => Direction::UP,
+                    KeyCode::Char('s') | KeyCode::Down => Direction::DOWN,
                     _ => {
-                        println!("Invalid input: {}", input);
+                        println!("Invalid input!");
                         println!("{grid}");
                         continue;
                     }
