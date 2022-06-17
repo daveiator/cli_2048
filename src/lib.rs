@@ -2,33 +2,125 @@ use rand::Rng;
 use phf::phf_map;
 use std::fmt;
 
+/// Holds the game state.
 pub struct Grid {
     //rows contain cols
-    rows: Vec<Vec<u8>>
+    rows: Vec<Vec<u8>>,
+    pipes: &'static PipeMap,
+}
+
+impl Default for Grid {
+    fn default() -> Self {
+        Grid {
+            rows: vec![vec![0; 4]; 4],
+            pipes: &PIPEMAP_THICK,
+        }
+    }
 }
 
 impl Grid {
+    /// Creates a new grid with the given size and adds two numbers on random positions.
+    /// The size must be greater than 0 and greater than 1 in at least one dimension.
+    /// # Examples
+    ///
+    /// ```
+    /// use cli_2048::Grid;
+    /// 
+    /// //Create a 4x4 grid
+    /// let grid = Grid::new(4, 4);
+    ///
+    /// ```
     pub fn new(x_size: usize, y_size: usize) -> Grid {
         if x_size < 1 || y_size < 1 || x_size < 2 && y_size < 2 {
             panic!("Grid size cannot be 0");
         }
         let grid = Grid {
-            rows: vec![vec![0; x_size]; y_size]
+            rows: vec![vec![0; x_size]; y_size],
+            ..Default::default()
         };
         //add two starting numbers
         grid.add_random_number().unwrap().add_random_number().unwrap()
     }
 
+    /// Creates a new grid from a predefined grid.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cli_2048::Grid;
+    /// 
+    /// //Create a 4x4 vector
+    /// let rows = vec![vec![0; 4]; 4];
+    /// //Create a grid from the vector
+    /// let grid = Grid::from_rows(rows);
+    ///
+    /// ```
     pub fn from_rows(rows: Vec<Vec<u8>>) -> Grid {
         Grid {
             rows,
+            ..Default::default()
         }
     }
 
-    pub fn get_size(&self) -> (usize, usize) {
-        (( self.formatted_numbers()[0].len() + 1 ) * self.rows[0].len() + 1, self.rows.len() * 2 +1)
+    /// Returns a new instance of the grid, with a custom pipe-map for the borders.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cli_2048::Grid;
+    /// use cli_2048::PIPEMAPS;
+    /// 
+    /// //Create a 4x4 grid
+    /// let grid = Grid::new(4, 4);
+    /// //Create a grid with a custom pipe-map
+    /// let grid = grid.with_pipes(PIPEMAPS.get("Medium").unwrap());
+    /// 
+    /// //Or like this
+    /// let grid = Grid::new(4, 4).with_pipes(PIPEMAPS.get("Medium").unwrap());
+    /// 
+    /// ```
+    pub fn with_pipes(&self, pipes: &'static PipeMap) -> Grid {
+        Grid {
+            rows: self.rows.clone(),
+            pipes,
+        }
     }
-    
+    /// Gets the size of the grid in characters and with borders.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cli_2048::Grid;
+    /// 
+    /// //Create a 4x4 grid
+    /// let grid = Grid::new(4, 4);
+    /// 
+    /// let x_size = 4*2 + (4-1) + 2;
+    /// let y_size = 4 + (4-1) + 2;
+    ///
+    /// assert_eq!(grid.get_size(), (x_size, y_size));
+    /// 
+    /// ```
+    pub fn get_size(&self) -> (usize, usize) {
+        (self.rows.len() * self.formatted_numbers()[0][0].len() + self.rows.len() + 1, self.rows[0].len() * 2 + 1)
+    }
+    /// Returns a new Grid from the previous.
+    /// Slides and combines the grid in the given direction.
+    /// If the tiles change a new tile will be added at a random empty position.
+    /// If the grid is full the game is over (Err("no more options")).
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cli_2048::Grid;
+    /// use cli_2048::Direction;
+    /// 
+    /// //Create a 4x4 grid
+    /// let grid = Grid::new(4, 4);
+    /// let grid = grid.slide(Direction::Up);
+    /// let grid = grid.slide(Direction::Down);
+    /// 
+    /// ```
     pub fn slide(&self, dir: Direction) -> Result<Grid, &'static str> {
         let mut rows: Vec<Vec<u8>> = self.rows.clone();
 
@@ -81,7 +173,7 @@ impl Grid {
             }
         })()?;
 
-        let new_grid = Grid { rows }; 
+        let new_grid = Grid { rows, ..Default::default() }; 
         let new_grid_with_new_number = new_grid.add_random_number()?;
         //see if grid has changed
         if new_grid.rows != self.rows {
@@ -132,7 +224,7 @@ impl Grid {
         let mut new_rows = self.rows.clone();
         new_rows[option.0][option.1] = power;
 
-        Ok(Grid { rows: new_rows })
+        Ok(Grid { rows: new_rows, ..Default::default() })
     }
     fn formatted_numbers(&self) -> Vec<Vec<String>> {
 
@@ -187,7 +279,7 @@ impl fmt::Display for Grid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 
         //set pipes
-        let pipes = PIPES.get("Thick").unwrap();
+        let pipes = &self.pipes;
 
         let grid_str = self.formatted_numbers();
 
@@ -242,7 +334,19 @@ impl fmt::Display for Grid {
     }
 }
 
-//Direction
+    /// Used as parameters to the slide function.
+    /// # Examples
+    ///
+    /// ```
+    /// use cli_2048::Grid;
+    /// use cli_2048::Direction;
+    /// 
+    /// //Create a 4x4 grid
+    /// let grid = Grid::new(4, 4);
+    /// let grid = grid.slide(Direction::Up);
+    /// let grid = grid.slide(Direction::Down);
+    /// 
+    /// ```
 pub enum Direction {
     LEFT,
     RIGHT,
@@ -252,7 +356,27 @@ pub enum Direction {
 
 type PipeMap = phf::Map<&'static str, &'static str>;
 
-static PIPES: phf::Map<&'static str, &'static PipeMap> = phf_map! {
+    /// Contains three pipe-map presets:
+    /// Thin
+    /// Medium
+    /// Thick
+    /// 
+    /// # Examples
+    ///
+    /// ```
+    /// use cli_2048::Grid;
+    /// use cli_2048::PIPEMAPS;
+    /// 
+    /// //Create a 4x4 grid
+    /// let grid = Grid::new(4, 4);
+    /// //Create a grid with a custom pipe-map
+    /// let grid = grid.with_pipes(PIPEMAPS.get("Medium").unwrap());
+    /// 
+    /// //Or like this
+    /// let grid = Grid::new(4, 4).with_pipes(PIPEMAPS.get("Medium").unwrap());
+    /// 
+    /// ```
+pub static PIPEMAPS: phf::Map<&'static str, &'static PipeMap> = phf_map! {
     "Thin" => &PIPEMAP_THIN,
     "Medium" => &PIPEMAP_MEDIUM,
     "Thick" => &PIPEMAP_THICK,
