@@ -9,7 +9,7 @@ pub struct Grid {
 
 impl Grid {
     pub fn new(x_size: usize, y_size: usize) -> Grid {
-        if x_size < 2 && y_size < 2 {
+        if x_size < 1 || y_size < 1 || x_size < 2 && y_size < 2 {
             panic!("Grid size cannot be 0");
         }
         let grid = Grid {

@@ -1,6 +1,6 @@
 [package]
 name = "cli_2048"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["David Bühler <david@buehler-online.de>"]
 description = "2048 for the command line"
