@@ -1,12 +1,24 @@
 [package]
 name = "cli_2048"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
+authors = ["David Bühler <david@buehler-online.de>"]
+description = "2048 for the command line"
+#documentation = "https://docs.rs/cli_2048"
+repository = "https://github.com/daveiator/cli_2048"
+readme = "README.md"
+license = "MIT"
+keywords = ["2048", "game"]
+categories = ["Command line utilities", "Games"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [[bin]]
 name = "2048"
 path = "src/main.rs"
+
+[lib]
+name = "lib"
+path = "src/lib.rs"
 
 [dependencies]
 rand = "0.8.4"
